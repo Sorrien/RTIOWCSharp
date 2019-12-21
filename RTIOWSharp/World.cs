@@ -21,8 +21,8 @@ namespace RTIOWSharp
                 if(Hitables[i].Hit(r, t_min, closestSoFar, out temp))
                 {
                     hitAnything = true;
-                    closestSoFar = temp.t;
-                    hitRecord = temp;
+                    closestSoFar = temp.T;
+                    hitRecord = temp;                   
                 }
             }
             return hitAnything;

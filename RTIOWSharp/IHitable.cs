@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using RTIOWSharp.Materials;
 using System.Numerics;
-using System.Text;
 
 namespace RTIOWSharp
 {
@@ -12,8 +10,9 @@ namespace RTIOWSharp
 
     public class HitRecord
     {
-        public float t { get; set; }
-        public Vector3 p { get; set; }
-        public Vector3 normal { get; set; }
+        public float T { get; set; }
+        public Vector3 P { get; set; }
+        public Vector3 Normal { get; set; }
+        public IMaterial Material { get; set; }
     }
 }

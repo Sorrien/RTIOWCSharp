@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RTIOWSharp.Materials;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
@@ -14,17 +15,16 @@ namespace RTIOWSharp
 
         public void Run()
         {
-            var nx = 200;
-            var ny = 100;
-            var ns = 100;
-            var bmp = new Bitmap(nx, ny);
+            var nx = 800;
+            var ny = 400;
+            var ns = 100;          
 
             var colors = Render(nx, ny, ns);
 
             var colorArray = MapListToMultiArray(nx, ny, colors);
 
+            var bmp = new Bitmap(nx, ny);
             MultiArrayToBitmap(colorArray, ref bmp);
-
             bmp.Save("testimage.png");
         }
 
@@ -32,25 +32,28 @@ namespace RTIOWSharp
         {
             var colors = new List<Color>();
             var hitables = new List<IHitable>();
-            hitables.Add(new Sphere(new Vector3(0.0f, 0.0f, -1.0f), 0.5f));
-            hitables.Add(new Sphere(new Vector3(0.0f, -100.5f, -1.0f), 100));
+            hitables.Add(new Sphere(new Vector3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(new Vector3(0.8f,0.3f,0.3f))));
+            hitables.Add(new Sphere(new Vector3(0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(new Vector3(0.8f, 0.8f, 0.0f))));
+            hitables.Add(new Sphere(new Vector3(1.0f, 0.0f, -1.0f), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f))));
+            hitables.Add(new Sphere(new Vector3(-1.0f, 0.0f, -1.0f), 0.5f, new Metal(new Vector3(0.8f, 0.8f, 0.8f))));
             var camera = new Camera();
             var world = new World(hitables);
             var rand = new Random();
-            for (int j = height - 1; j >= 0; j--)
+            for (var j = height - 1; j >= 0; j--)
             {
-                for (int i = 0; i < width; i++)
+                for (var i = 0; i < width; i++)
                 {
                     var col = new Vector3();
-                    for (int s = 0; s < ns; s++)
+                    for (var s = 0; s < ns; s++)
                     {
                         //random float greater than 0 and less than 1
                         var u = (float)(i + rand.NextDouble()) / width;
                         var v = (float)(j + rand.NextDouble()) / height;
                         var ray = camera.GetRay(u, v);
-                        col += GetColor(ray, world);
+                        col += GetColor(ray, world, 0);
                     }
                     col /= ns;
+                    col = new Vector3(MathF.Sqrt(col.X), MathF.Sqrt(col.Y), MathF.Sqrt(col.Z));
                     var ir = (int)(255.99 * col.X);
                     var ig = (int)(255.99 * col.Y);
                     var ib = (int)(255.99 * col.Z);
@@ -62,24 +65,28 @@ namespace RTIOWSharp
             return colors;
         }
 
-        public Vector3 GetColor(Ray r, World world)
+        public Vector3 GetColor(Ray r, World world, int depth)
         {
             HitRecord hitRecord;
-            if (world.Hit(r, 0.0f, float.MaxValue, out hitRecord))
+            if (world.Hit(r, 0.001f, float.MaxValue, out hitRecord))
             {
-                return 0.5f * new Vector3(hitRecord.normal.X + 1.0f, hitRecord.normal.Y + 1.0f, hitRecord.normal.Z + 1.0f);
+                Ray scattered;
+                Vector3 attenuation;
+                if (depth < 50 && hitRecord.Material.Scatter(r, hitRecord, out attenuation, out scattered))
+                {
+                    return attenuation * GetColor(scattered, world, depth + 1);
+                }
+                else
+                {
+                    return new Vector3(0.0f, 0.0f, 0.0f);
+                }
             }
             else
             {
-                var unitDirection = UnitVector(r.Direction());
-                float t = 0.5f * (unitDirection.Y + 1.0f);
+                var unitDirection = HelperFunctions.UnitVector(r.Direction());
+                var t = 0.5f * (unitDirection.Y + 1.0f);
                 return (1.0f - t) * new Vector3(1.0f, 1.0f, 1.0f) + t * new Vector3(0.5f, 0.7f, 1.0f);
             }
-        }
-
-        public Vector3 UnitVector(Vector3 vector)
-        {
-            return vector / vector.Length();
         }
 
         public Color[,] MapListToMultiArray(int width, int height, List<Color> colors)
@@ -87,9 +94,9 @@ namespace RTIOWSharp
             var colorArray = new Color[height, width];
 
             var colorIndex = 0;
-            for (int j = 0; j < height; j++)
+            for (var j = 0; j < height; j++)
             {
-                for (int i = 0; i < width; i++)
+                for (var i = 0; i < width; i++)
                 {
                     var color = colors[colorIndex];
                     colorArray[j, i] = color;
@@ -105,9 +112,9 @@ namespace RTIOWSharp
             var height = colors.GetLength(0);
             var width = colors.GetLength(1);
 
-            for (int j = 0; j < height; j++)
+            for (var j = 0; j < height; j++)
             {
-                for (int i = 0; i < width; i++)
+                for (var i = 0; i < width; i++)
                 {
                     var color = colors[j, i];
                     bmp.SetPixel(i, j, color);

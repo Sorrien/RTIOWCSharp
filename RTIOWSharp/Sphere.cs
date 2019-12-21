@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RTIOWSharp.Materials;
+using System;
 using System.Numerics;
 
 namespace RTIOWSharp
@@ -7,10 +8,12 @@ namespace RTIOWSharp
     {
         public Vector3 Center { get; set; }
         public float Radius { get; set; }
-        public Sphere(Vector3 center, float radius)
+        public IMaterial Material { get; set; }
+        public Sphere(Vector3 center, float radius, IMaterial material)
         {
             Center = center;
             Radius = radius;
+            Material = material;
         }
         public bool Hit(Ray r, float t_min, float t_max, out HitRecord hitRecord)
         {
@@ -26,9 +29,9 @@ namespace RTIOWSharp
                 var temp = (-b - MathF.Sqrt(b * b - a * c)) / a;
                 if (temp < t_max && temp > t_min)
                 {
-                    hitRecord.t = temp;
-                    hitRecord.p = r.PointAtParameter(hitRecord.t);
-                    hitRecord.normal = (hitRecord.p - Center) / Radius;
+                    hitRecord.T = temp;
+                    hitRecord.P = r.PointAtParameter(hitRecord.T);
+                    hitRecord.Normal = (hitRecord.P - Center) / Radius;
                     didHit = true;
                 }
                 else
@@ -36,12 +39,13 @@ namespace RTIOWSharp
                     temp = (-b + MathF.Sqrt(b * b - a * c)) / a;
                     if (temp < t_max && temp > t_min)
                     {
-                        hitRecord.t = temp;
-                        hitRecord.p = r.PointAtParameter(hitRecord.t);
-                        hitRecord.normal = (hitRecord.p - Center) / Radius;
+                        hitRecord.T = temp;
+                        hitRecord.P = r.PointAtParameter(hitRecord.T);
+                        hitRecord.Normal = (hitRecord.P - Center) / Radius;
                         didHit = true;
                     }
                 }
+                hitRecord.Material = Material;
             }
             return didHit;
         }
