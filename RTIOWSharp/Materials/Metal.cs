@@ -21,15 +21,10 @@ namespace RTIOWSharp.Materials
 
         public bool Scatter(Ray rIn, HitRecord hitRecord, out Vector3 attenuation, out Ray scattered)
         {
-            var reflected = Reflect(HelperFunctions.UnitVector(rIn.Direction()), hitRecord.Normal);
+            var reflected = HelperFunctions.Reflect(HelperFunctions.UnitVector(rIn.Direction()), hitRecord.Normal);
             scattered = new Ray(hitRecord.P, reflected + Fuzz * HelperFunctions.RandomInUnitSphere());
             attenuation = Albedo;
             return Vector3.Dot(scattered.Direction(), hitRecord.Normal) > 0;
-        }
-
-        private Vector3 Reflect(Vector3 v, Vector3 n)
-        {
-            return v - 2 * Vector3.Dot(v, n) * n;
         }
     }
 }

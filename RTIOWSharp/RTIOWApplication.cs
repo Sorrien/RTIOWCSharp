@@ -37,7 +37,8 @@ namespace RTIOWSharp
             hitables.Add(new Sphere(new Vector3(0.0f, 0.0f, -1.0f), 0.5f, new Lambertian(new Vector3(0.8f, 0.3f, 0.3f))));
             hitables.Add(new Sphere(new Vector3(0.0f, -100.5f, -1.0f), 100.0f, new Lambertian(new Vector3(0.8f, 0.8f, 0.0f))));
             hitables.Add(new Sphere(new Vector3(1.0f, 0.0f, -1.0f), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0.3f)));
-            hitables.Add(new Sphere(new Vector3(-1.0f, 0.0f, -1.0f), 0.5f, new Metal(new Vector3(0.8f, 0.8f, 0.8f), 1.0f)));
+            hitables.Add(new Sphere(new Vector3(-1.0f, 0.0f, -1.0f), 0.5f, new Dielectric(1.5f)));
+            hitables.Add(new Sphere(new Vector3(-1.0f, 0.0f, -1.0f), -0.45f, new Dielectric(1.5f)));
             var world = new World(hitables);
             return world;
         }
