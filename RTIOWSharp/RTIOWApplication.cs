@@ -16,12 +16,18 @@ namespace RTIOWSharp
 
         public void Run()
         {
-            var nx = 800;
-            var ny = 400;
+            var nx = 200;
+            var ny = 100;
             var ns = 100;
 
-            var world = CreateWorld();
-            var camera = new Camera();
+            var world = CreateBookWorld();
+
+            var lookFrom = new Vector3(9.5f, 2f, 2.5f);
+            var lookAt = new Vector3(3f, 0.5f, 0.65f);
+            var distanceToFocus = (lookFrom - lookAt).Length();
+            var aperture = 0.01f;
+            var camera = new Camera(lookFrom, lookAt, new Vector3(0f, 1f, 0f), 25f, (float)nx / (float)ny, aperture, distanceToFocus);
+
             var colors = RenderParallel(nx, ny, ns, camera, world);
 
             var colorArray = MapListToMultiArray(nx, ny, colors);
@@ -39,6 +45,44 @@ namespace RTIOWSharp
             hitables.Add(new Sphere(new Vector3(1.0f, 0.0f, -1.0f), 0.5f, new Metal(new Vector3(0.8f, 0.6f, 0.2f), 0.3f)));
             hitables.Add(new Sphere(new Vector3(-1.0f, 0.0f, -1.0f), 0.5f, new Dielectric(1.5f)));
             hitables.Add(new Sphere(new Vector3(-1.0f, 0.0f, -1.0f), -0.45f, new Dielectric(1.5f)));
+            var world = new World(hitables);
+            return world;
+        }
+
+        public World CreateBookWorld()
+        {
+            var hitables = new List<IHitable>();
+            hitables.Add(new Sphere(new Vector3(0f, -1000f, 0f), 1000f, new Lambertian(new Vector3(0.5f, 0.5f, 0.5f))));
+            var rand = new Random();
+            for (var a = -11; a < 11; a++)
+            {
+                for (var b = -11; b < 11; b++)
+                {
+                    var chooseMat = (float)rand.NextDouble();
+                    var center = new Vector3(a + 0.9f * (float)rand.NextDouble(), 0.2f, b + 0.9f * (float)rand.NextDouble());
+                    if((center-new Vector3(4f,0.2f,0f)).Length() > 0.9f)
+                    {
+                        IMaterial material;
+                        if(chooseMat < 0.8f) //diffuse
+                        {
+                            material = new Lambertian(new Vector3((float)(rand.NextDouble() * rand.NextDouble()), (float)(rand.NextDouble() * rand.NextDouble()), (float)(rand.NextDouble() * rand.NextDouble())));
+                        }
+                        else if(chooseMat < 0.95) //metal
+                        {
+                            material = new Metal(new Vector3(0.5f * (float)(1f + rand.NextDouble()), 0.5f * (float)(1 + rand.NextDouble()), 0.5f * (float)(1 + rand.NextDouble())), 0.5f * (float)(1 + rand.NextDouble()));
+                        }
+                        else //glass
+                        {
+                            material = new Dielectric(1.5f);
+                        }
+
+                        hitables.Add(new Sphere(center, 0.2f, material));
+                    }
+                }
+            }
+            hitables.Add(new Sphere(new Vector3(0f, 1f, 0f), 1.0f, new Dielectric(1.5f)));
+            hitables.Add(new Sphere(new Vector3(-4.0f, 1, 0), 1.0f, new Lambertian(new Vector3(0.4f, 0.2f, 0.1f))));
+            hitables.Add(new Sphere(new Vector3(4f, 1f, 0f), 1.0f, new Metal(new Vector3(0.7f, 0.6f, 0.5f), 0.0f)));
             var world = new World(hitables);
             return world;
         }

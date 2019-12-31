@@ -38,7 +38,6 @@ namespace RTIOWSharp.Materials
             else
             {
                 reflectProb = 1.0f;
-                //scattered = new Ray(hitRecord.P, reflected);
             }
             var random = new Random();
             if(random.NextDouble() < reflectProb)
