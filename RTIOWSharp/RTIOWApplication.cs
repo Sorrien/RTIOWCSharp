@@ -16,8 +16,8 @@ namespace RTIOWSharp
 
         public void Run()
         {
-            var nx = 200;
-            var ny = 100;
+            var nx = 400;
+            var ny = 200;
             var ns = 100;
 
             var world = CreateBookWorld();
@@ -31,7 +31,6 @@ namespace RTIOWSharp
             var colors = RenderParallel(nx, ny, ns, camera, world);
 
             var colorArray = MapListToMultiArray(nx, ny, colors);
-
             var bmp = new Bitmap(nx, ny);
             MultiArrayToBitmap(colorArray, ref bmp);
             bmp.Save("testimage.png");
@@ -91,7 +90,7 @@ namespace RTIOWSharp
         {
             var colorMulti = new Color[height, width];
 
-            Parallel.ForEach(CreateIterator(height - 1, 0), j =>
+            Parallel.ForEach(CreateRange(height - 1, 0), j =>
                {
                    var rand = new Random();
                    for (var i = 0; i < width; i++)
@@ -127,7 +126,7 @@ namespace RTIOWSharp
             return colors;
         }
 
-        private int[] CreateIterator(int start, int end)
+        private int[] CreateRange(int start, int end)
         {
             var result = new int[Math.Abs(start - end)];
 
